@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  kubeconfig-service:
+    build: .
+    container_name: kubeconfig-service
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+      - ./uploaded_kubeconfigs:/app/uploaded_kubeconfigs
+    environment:
+      - DATABASE_URL=sqlite:///kubeconfig_service.db
+      - USER_SERVICE_URL=https://user-service:8000
+      - DEBUG=${DEBUG:-false}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: kubeconfig-service-redis
+    ports:
+      - "6380:6379"  # Different host port from user service
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

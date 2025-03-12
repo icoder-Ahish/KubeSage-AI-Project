@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8sgpt-service-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  tls:
+  - hosts:
+    - kubesage.example.com
+    secretName: kubesage-tls-secret
+  rules:
+  - host: kubesage.example.com
+    http:
+      paths:
+      - path: /api/k8sgpt(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: k8sgpt-service
+            port:
+              number: 8002

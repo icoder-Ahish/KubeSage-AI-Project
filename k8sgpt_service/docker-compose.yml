@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  k8sgpt-service:
+    build: .
+    container_name: k8sgpt-service
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+      - ./analysis_results:/app/analysis_results
+    environment:
+      - DATABASE_URL=sqlite:///k8sgpt_service.db
+      - USER_SERVICE_URL=https://user-service:8000
+      - KUBECONFIG_SERVICE_URL=https://kubeconfig-service:8001
+      - DEBUG=${DEBUG:-false}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: k8sgpt-service-redis
+    ports:
+      - "6381:6379"  # Different host port from other services
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:
